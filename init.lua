@@ -1,40 +1,41 @@
--- Initialize the CLI application
+-- Simple Logger Setup with Rotation
+local lfs = require('lfs')
 
-local function printWelcomeMessage()
-    print("Welcome to CLI Helper 78!")
+local Logger = {}
+Logger.__index = Logger
+
+function Logger:new(log_dir, max_size, max_files)
+    local self = setmetatable({}, Logger)
+    self.log_dir = log_dir or '.'
+    self.max_size = max_size or 1024 * 1024 -- 1MB
+    self.max_files = max_files or 5
+    self.current_log_file = self.log_dir .. '/log.txt'
+    return self
 end
 
-local function parseArguments(args)
-    local opts = {}
-    for i = 1, #args do
-        local arg = args[i]
-        if arg:sub(1, 2) == '--' then
-            local key = arg:sub(3)
-            opts[key] = true
-        else
-            table.insert(opts, arg)
+function Logger:log(message)
+    local log_file = io.open(self.current_log_file, 'a')
+    log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+    log_file:close()
+    self:check_rotation()
+end
+
+function Logger:check_rotation()
+    local file_size = lfs.attributes(self.current_log_file, 'size')
+    if file_size and file_size >= self.max_size then
+        self:rotate_logs()
+    end
+end
+
+function Logger:rotate_logs()
+    for i = self.max_files, 1, -1 do
+        local old_file = self.log_dir .. '/log.' .. i .. '.txt'
+        local new_file = self.log_dir .. '/log.' .. (i + 1) .. '.txt'
+        if lfs.attributes(old_file) then
+            os.rename(old_file, new_file)
         end
     end
-    return opts
+    os.rename(self.current_log_file, self.log_dir .. '/log.1.txt')
 end
 
-local function executeCommand(command)
-    if command == "help" then
-        print("Available commands: help, exit")
-    elseif command == "exit" then
-        print("Exiting application...")
-        os.exit(0)
-    else
-        print("Unknown command: " .. command)
-    end
-end
-
-local function main(args)
-    printWelcomeMessage()
-    local options = parseArguments(args)
-    for _, command in ipairs(options) do
-        executeCommand(command)
-    end
-end
-
-main(arg)
+return Logger
