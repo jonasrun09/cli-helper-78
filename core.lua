@@ -1,35 +1,33 @@
--- Retry function for network operations
-local function retry(func, attempts, delay)
-    local status, result
-    for i = 1, attempts do
-        status, result = pcall(func)
-        if status then
-            return result
-        end
-        print(string.format("Attempt %d failed: %s", i, result))
-        if i < attempts then
-            os.execute(string.format("sleep %d", delay))
-        end
+-- Core module for CLI helper
+
+local M = {}
+
+-- Function to generate a list of Fibonacci numbers
+-- This version uses memoization for performance optimization
+local function fibonacci(n, memo)
+    memo = memo or {}
+    if n <= 1 then return n end
+    if memo[n] then return memo[n] end
+    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)
+    return memo[n]
+end
+
+-- Function to generate a Fibonacci sequence
+function M.generate_fibonacci_sequence(limit)
+    local result = {}
+    for i = 0, limit - 1 do
+        table.insert(result, fibonacci(i))
     end
-    error(string.format("All %d attempts failed.", attempts))
+    return result
 end
 
--- Sample network operation
-local function networkOperation()
-    -- Simulate a network request that may fail
-    if math.random() < 0.7 then
-        error("Network error encountered.")
+-- Function to print the Fibonacci sequence
+function M.print_fibonacci_sequence(limit)
+    local sequence = M.generate_fibonacci_sequence(limit)
+    for _, num in ipairs(sequence) do
+        io.write(num .. ' ')
     end
-    return "Network request successful."
+    print()  -- New line at the end
 end
 
--- Usage of retry logic
-local success, message = pcall(function()
-    return retry(networkOperation, 5, 2)
-end)
-
-if success then
-    print(message)
-else
-    print("Final error: " .. message)
-end
+return M
