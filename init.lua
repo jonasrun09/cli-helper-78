@@ -1,41 +1,37 @@
--- Simple Logger Setup with Rotation
-local lfs = require('lfs')
+-- Function to make a network request simulation
+local function networkRequest()  
+    if math.random() < 0.5 then  
+        error("Network Error")  
+    else  
+        return "Success"  
+    end  
+end  
 
-local Logger = {}
-Logger.__index = Logger
+-- Function to implement retry logic
+local function retryNetworkOperation(retries, delay)
+    local attempts = 0  
+    while attempts < retries do  
+        attempts = attempts + 1  
+        local success, result = pcall(networkRequest)  
+        if success then  
+            return result  
+        else  
+            print(string.format("Attempt %d failed: %s", attempts, result))  
+            if attempts < retries then  
+                print(string.format("Retrying in %d seconds...", delay))  
+                os.execute("sleep " .. tonumber(delay))  
+            end  
+        end  
+    end  
+    return nil, "All attempts failed"  
+end  
 
-function Logger:new(log_dir, max_size, max_files)
-    local self = setmetatable({}, Logger)
-    self.log_dir = log_dir or '.'
-    self.max_size = max_size or 1024 * 1024 -- 1MB
-    self.max_files = max_files or 5
-    self.current_log_file = self.log_dir .. '/log.txt'
-    return self
+-- Starting point
+local maxRetries = 5
+local retryDelay = 2
+local result = retryNetworkOperation(maxRetries, retryDelay)
+if result then  
+    print("Operation completed: " .. result)  
+else  
+    print("Final failure after retries")  
 end
-
-function Logger:log(message)
-    local log_file = io.open(self.current_log_file, 'a')
-    log_file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    log_file:close()
-    self:check_rotation()
-end
-
-function Logger:check_rotation()
-    local file_size = lfs.attributes(self.current_log_file, 'size')
-    if file_size and file_size >= self.max_size then
-        self:rotate_logs()
-    end
-end
-
-function Logger:rotate_logs()
-    for i = self.max_files, 1, -1 do
-        local old_file = self.log_dir .. '/log.' .. i .. '.txt'
-        local new_file = self.log_dir .. '/log.' .. (i + 1) .. '.txt'
-        if lfs.attributes(old_file) then
-            os.rename(old_file, new_file)
-        end
-    end
-    os.rename(self.current_log_file, self.log_dir .. '/log.1.txt')
-end
-
-return Logger
