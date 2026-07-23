@@ -1,37 +1,25 @@
--- Function to make a network request simulation
-local function networkRequest()  
-    if math.random() < 0.5 then  
-        error("Network Error")  
-    else  
-        return "Success"  
-    end  
-end  
+-- Simple Lua HTTP client with retry logic
+local http = require('socket.http')
 
--- Function to implement retry logic
-local function retryNetworkOperation(retries, delay)
-    local attempts = 0  
-    while attempts < retries do  
-        attempts = attempts + 1  
-        local success, result = pcall(networkRequest)  
-        if success then  
-            return result  
-        else  
-            print(string.format("Attempt %d failed: %s", attempts, result))  
-            if attempts < retries then  
-                print(string.format("Retrying in %d seconds...", delay))  
-                os.execute("sleep " .. tonumber(delay))  
-            end  
-        end  
-    end  
-    return nil, "All attempts failed"  
-end  
+local function request_with_retry(url, max_retries)
+    local attempts = 0
+    local response, status
 
--- Starting point
-local maxRetries = 5
-local retryDelay = 2
-local result = retryNetworkOperation(maxRetries, retryDelay)
-if result then  
-    print("Operation completed: " .. result)  
-else  
-    print("Final failure after retries")  
+    while attempts < max_retries do
+        attempts = attempts + 1
+        response, status = http.request(url)
+        if status == 200 then
+            return response
+        end
+        print('Attempt ' .. attempts .. ' failed with status: ' .. status)
+        if attempts < max_retries then
+            os.execute('sleep 1')  -- wait before retrying
+        end
+    end
+    error('Failed to get a successful response after ' .. max_retries .. ' attempts')
 end
+
+-- Example usage:
+local url = 'http://example.com'
+local result = request_with_retry(url, 3)
+print(result)
