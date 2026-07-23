@@ -1,28 +1,27 @@
 local function validateInput(input)
     if type(input) ~= 'string' then
-        return false, 'Input must be a string'
-    elseif #input < 1 then
-        return false, 'Input cannot be empty'
+        return false, 'Input must be a string.'
+    end
+    if #input == 0 then
+        return false, 'Input cannot be empty.'
     end
     return true
 end
 
-local function processInput()
-    while true do
-        io.write('Enter input (or type exit to quit): ')
-        local userInput = io.read()
-        if userInput == 'exit' then
-            print('Exiting...')
-            break
-        end
-        local isValid, errorMessage = validateInput(userInput)
-        if not isValid then
-            print('Error:', errorMessage)
-        else
-            print('Processing:', userInput)
-            -- Add processing logic here
-        end
+local function processInput(input)
+    local isValid, errMsg = validateInput(input)
+    if not isValid then
+        print('Error: ' .. errMsg)
+        return
     end
+    print('Processing input: ' .. input)
+    -- simulate some processing
 end
 
-processInput()
+local function main()
+    print('Enter your input:')
+    local userInput = io.read()
+    processInput(userInput)
+end
+
+main()
