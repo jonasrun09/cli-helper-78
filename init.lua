@@ -1,27 +1,52 @@
-local function validateInput(input)
-    if type(input) ~= 'string' then
-        return false, 'Input must be a string.'
+-- Utility function for general data handling
+
+local M = {}
+
+-- Flatten a nested table structure
+function M.flatten(tbl)
+    local result = {}
+    local function recursiveFlatten(t)
+        for _, v in ipairs(t) do
+            if type(v) == 'table' then
+                recursiveFlatten(v)
+            else
+                table.insert(result, v)
+            end
+        end
     end
-    if #input == 0 then
-        return false, 'Input cannot be empty.'
-    end
-    return true
+    recursiveFlatten(tbl)
+    return result
 end
 
-local function processInput(input)
-    local isValid, errMsg = validateInput(input)
-    if not isValid then
-        print('Error: ' .. errMsg)
-        return
+-- Merge two tables with deep copy
+function M.mergeDeep(t1, t2)
+    local result = {}
+    for k, v in pairs(t1) do
+        if type(v) == 'table' and type(t2[k]) == 'table' then
+            result[k] = M.mergeDeep(v, t2[k])
+        else
+            result[k] = v
+        end
     end
-    print('Processing input: ' .. input)
-    -- simulate some processing
+    for k, v in pairs(t2) do
+        if not result[k] then
+            result[k] = v
+        end
+    end
+    return result
 end
 
-local function main()
-    print('Enter your input:')
-    local userInput = io.read()
-    processInput(userInput)
+-- Collect unique items from a table
+function M.unique(tbl)
+    local result = {}
+    local hash = {}
+    for _, v in ipairs(tbl) do
+        if not hash[v] then
+            hash[v] = true
+            table.insert(result, v)
+        end
+    end
+    return result
 end
 
-main()
+return M
