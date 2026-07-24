@@ -1,52 +1,26 @@
--- Utility function for general data handling
-
-local M = {}
-
--- Flatten a nested table structure
-function M.flatten(tbl)
-    local result = {}
-    local function recursiveFlatten(t)
-        for _, v in ipairs(t) do
-            if type(v) == 'table' then
-                recursiveFlatten(v)
-            else
-                table.insert(result, v)
-            end
-        end
+-- Function to simulate a division
+function safeDivide(num, denom)
+    -- Error handling for edge cases
+    if type(num) ~= 'number' or type(denom) ~= 'number' then
+        return 'Error: both arguments must be numbers'
+    elseif denom == 0 then
+        return 'Error: division by zero is undefined'
+    else
+        return num / denom
     end
-    recursiveFlatten(tbl)
-    return result
 end
 
--- Merge two tables with deep copy
-function M.mergeDeep(t1, t2)
-    local result = {}
-    for k, v in pairs(t1) do
-        if type(v) == 'table' and type(t2[k]) == 'table' then
-            result[k] = M.mergeDeep(v, t2[k])
-        else
-            result[k] = v
-        end
+-- Function to process input and catch failures
+function processInput(input)
+    local result = safeDivide(input.num, input.denom)
+    if type(result) == 'string' then
+        return result  -- Return error message
     end
-    for k, v in pairs(t2) do
-        if not result[k] then
-            result[k] = v
-        end
-    end
-    return result
+    return 'Result: ' .. result
 end
 
--- Collect unique items from a table
-function M.unique(tbl)
-    local result = {}
-    local hash = {}
-    for _, v in ipairs(tbl) do
-        if not hash[v] then
-            hash[v] = true
-            table.insert(result, v)
-        end
-    end
-    return result
-end
-
-return M
+-- Examples to demonstrate the function
+print(processInput({num = 10, denom = 2}))  -- Should output 5
+print(processInput({num = 10, denom = 0}))  -- Should output division by zero error
+print(processInput({num = 'a', denom = 2}))  -- Should output argument error
+print(processInput({num = 10}))  -- Should output missing denom error
