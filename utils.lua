@@ -1,54 +1,37 @@
--- A collection of helper functions
-
 local M = {}
 
--- Function to check if a table is empty
-function M.is_table_empty(t)
-    return next(t) == nil
-end
-
--- Function to merge two tables
-function M.merge_tables(t1, t2)
-    local merged = {}
-    for k, v in pairs(t1) do
-        merged[k] = v
-    end
-    for k, v in pairs(t2) do
-        merged[k] = v
-    end
-    return merged
-end
-
--- Function to deep copy a table
-function M.deep_copy(orig)
-    local orig_type = type(orig)
+function M.deep_copy(original)
     local copy
-    if orig_type == 'table' then
+    if type(original) == 'table' then
         copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[M.deep_copy(orig_key)] = M.deep_copy(orig_value)
+        for key, value in pairs(original) do
+            copy[M.deep_copy(key)] = M.deep_copy(value)
         end
-        setmetatable(copy, M.deep_copy(getmetatable(orig)))
+        setmetatable(copy, M.deep_copy(getmetatable(original)))
     else -- number, string, boolean, etc
-        copy = orig
+        copy = original
     end
     return copy
 end
 
--- Function to retrieve a value safely
-function M.safe_get(table, key, default)
-    if table[key] ~= nil then
-        return table[key]
-    else
-        return default
+function M.table_merge(t1, t2)
+    local merged = M.deep_copy(t1)
+    for key, value in pairs(t2) do
+        if type(value) == 'table' and type(merged[key]) == 'table' then
+            merged[key] = M.table_merge(merged[key], value)
+        else
+            merged[key] = value
+        end
     end
+    return merged
 end
 
--- Function to split a string by a delimiter
-function M.split_string(input, delimiter)
+function M.filter_table(tbl, predicate)
     local result = {}
-    for match in (input..delimiter):gmatch('(.-)'..delimiter) do
-        table.insert(result, match)
+    for key, value in pairs(tbl) do
+        if predicate(value, key) then
+            result[key] = value
+        end
     end
     return result
 end
