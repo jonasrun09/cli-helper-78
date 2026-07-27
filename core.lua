@@ -1,33 +1,45 @@
--- Core module for CLI helper
+--[[
+Utility function for general data handling
+This function merges two tables, with the option to overwrite existing keys.
+]]
 
-local M = {}
-
--- Function to generate a list of Fibonacci numbers
--- This version uses memoization for performance optimization
-local function fibonacci(n, memo)
-    memo = memo or {}
-    if n <= 1 then return n end
-    if memo[n] then return memo[n] end
-    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo)
-    return memo[n]
-end
-
--- Function to generate a Fibonacci sequence
-function M.generate_fibonacci_sequence(limit)
-    local result = {}
-    for i = 0, limit - 1 do
-        table.insert(result, fibonacci(i))
+local function mergeTables(table1, table2, overwriteExisting)
+    local merged = {}
+    for k, v in pairs(table1) do
+        merged[k] = v
     end
-    return result
-end
-
--- Function to print the Fibonacci sequence
-function M.print_fibonacci_sequence(limit)
-    local sequence = M.generate_fibonacci_sequence(limit)
-    for _, num in ipairs(sequence) do
-        io.write(num .. ' ')
+    for k, v in pairs(table2) do
+        if overwriteExisting or merged[k] == nil then
+            merged[k] = v
+        end
     end
-    print()  -- New line at the end
+    return merged
 end
 
-return M
+local function safeGet(table, key, default)
+    if table[key] ~= nil then
+        return table[key]
+    else
+        return default
+    end
+end
+
+local function deepCopy(source)
+    local copy
+    if type(source) == 'table' then
+        copy = {}
+        for k, v in pairs(source) do
+            copy[deepCopy(k)] = deepCopy(v)
+        end
+        setmetatable(copy, deepCopy(getmetatable(source)))
+    else
+        copy = source
+    end
+    return copy
+end
+
+return {
+    mergeTables = mergeTables,
+    safeGet = safeGet,
+    deepCopy = deepCopy
+}
