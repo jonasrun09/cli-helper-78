@@ -1,39 +1,41 @@
-local M = {}
+local lfs = require('lfs')
 
-function M.deep_copy(original)
-    local copy
-    if type(original) == 'table' then
-        copy = {}
-        for key, value in pairs(original) do
-            copy[M.deep_copy(key)] = M.deep_copy(value)
-        end
-        setmetatable(copy, M.deep_copy(getmetatable(original)))
-    else -- number, string, boolean, etc
-        copy = original
-    end
-    return copy
+local Logger = {}
+Logger.__index = Logger
+
+function Logger:new(logDir, maxSize)
+    local instance = setmetatable({}, self)
+    instance.logDir = logDir or './logs'
+    instance.maxSize = maxSize or 1048576 -- 1MB
+    instance:setup()
+    return instance
 end
 
-function M.table_merge(t1, t2)
-    local merged = M.deep_copy(t1)
-    for key, value in pairs(t2) do
-        if type(value) == 'table' and type(merged[key]) == 'table' then
-            merged[key] = M.table_merge(merged[key], value)
-        else
-            merged[key] = value
-        end
+function Logger:setup()
+    if not lfs.attributes(self.logDir) then
+        lfs.mkdir(self.logDir)
     end
-    return merged
+    self.logFilePath = self.logDir .. '/log.txt'
+    self:checkRotation()
 end
 
-function M.filter_table(tbl, predicate)
-    local result = {}
-    for key, value in pairs(tbl) do
-        if predicate(value, key) then
-            result[key] = value
+function Logger:checkRotation()
+    local file = io.open(self.logFilePath, 'a+')
+    if file then
+        file:seek('end')
+        local size = file:seek('cur')
+        file:close()
+        if size >= self.maxSize then
+            os.rename(self.logFilePath, self.logDir .. '/log_' .. os.date('%Y%m%d%H%M%S') .. '.txt')
         end
     end
-    return result
 end
 
-return M
+function Logger:log(message)
+    self:checkRotation()
+    local file = io.open(self.logFilePath, 'a')
+    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
+    file:close()
+end
+
+return Logger
