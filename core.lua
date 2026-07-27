@@ -1,45 +1,35 @@
---[[
-Utility function for general data handling
-This function merges two tables, with the option to overwrite existing keys.
-]]
+-- Retry logic for network operations in Lua
 
-local function mergeTables(table1, table2, overwriteExisting)
-    local merged = {}
-    for k, v in pairs(table1) do
-        merged[k] = v
-    end
-    for k, v in pairs(table2) do
-        if overwriteExisting or merged[k] == nil then
-            merged[k] = v
+local function networkRequest(url)
+    -- Placeholder for actual network request logic (e.g. using socket library)
+    return math.random() < 0.7 -- Simulates a failure 30% of the time
+end
+
+local function retryNetworkOperation(url, maxRetries, delay)
+    local tryCount = 0
+    local success, result
+
+    while tryCount < maxRetries do
+        tryCount = tryCount + 1
+        success, result = pcall(networkRequest, url)
+
+        if success and result then
+            return result
         end
+        print(string.format("Attempt %d failed, retrying in %d seconds...", tryCount, delay))
+        os.execute(string.format("sleep %d", delay)) -- Simple sleep function, replace with appropriate delay logic
     end
-    return merged
+    error("All attempts failed after " .. tryCount .. " retries")
 end
 
-local function safeGet(table, key, default)
-    if table[key] ~= nil then
-        return table[key]
-    else
-        return default
-    end
+-- Example usage
+local url = "http://example.com"
+local maxRetries = 5
+local delay = 2
+
+local function run()
+    local successResult = retryNetworkOperation(url, maxRetries, delay)
+    print("Operation succeeded with result: " .. tostring(successResult))
 end
 
-local function deepCopy(source)
-    local copy
-    if type(source) == 'table' then
-        copy = {}
-        for k, v in pairs(source) do
-            copy[deepCopy(k)] = deepCopy(v)
-        end
-        setmetatable(copy, deepCopy(getmetatable(source)))
-    else
-        copy = source
-    end
-    return copy
-end
-
-return {
-    mergeTables = mergeTables,
-    safeGet = safeGet,
-    deepCopy = deepCopy
-}
+run()
