@@ -1,26 +1,33 @@
--- Function to simulate a division
-function safeDivide(num, denom)
-    -- Error handling for edge cases
-    if type(num) ~= 'number' or type(denom) ~= 'number' then
-        return 'Error: both arguments must be numbers'
-    elseif denom == 0 then
-        return 'Error: division by zero is undefined'
-    else
-        return num / denom
-    end
+local function handleError(err)
+    print("Error: " .. tostring(err))
+    os.exit(1)
 end
 
--- Function to process input and catch failures
-function processInput(input)
-    local result = safeDivide(input.num, input.denom)
-    if type(result) == 'string' then
-        return result  -- Return error message
+local function safeDiv(a, b)
+    if b == 0 then
+        handleError("Division by zero")
     end
-    return 'Result: ' .. result
+    return a / b
 end
 
--- Examples to demonstrate the function
-print(processInput({num = 10, denom = 2}))  -- Should output 5
-print(processInput({num = 10, denom = 0}))  -- Should output division by zero error
-print(processInput({num = 'a', denom = 2}))  -- Should output argument error
-print(processInput({num = 10}))  -- Should output missing denom error
+local function parseInput(input)
+    local num = tonumber(input)
+    if not num then
+        handleError("Invalid number: " .. tostring(input))
+    end
+    return num
+end
+
+local function processInput(input1, input2)
+    local a = parseInput(input1)
+    local b = parseInput(input2)
+    return safeDiv(a, b)
+end
+
+local args = {...}
+if #args ~= 2 then
+    handleError("Two arguments required")
+end
+
+local result = processInput(args[1], args[2])
+print("Result: " .. result)
