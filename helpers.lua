@@ -1,32 +1,41 @@
--- Helper function to read a file
-local function readFile(filePath)
-    local file = io.open(filePath, "r")
-    if not file then
-        return nil, "Could not open file: " .. filePath
-    end
-    local content = file:read("*a")
-    file:close()
-    return content
+-- Utility function to check if a value is not nil
+local function isNotNil(value)
+    return value ~= nil
 end
 
--- Helper function to write to a file
-local function writeFile(filePath, content)
-    local file = io.open(filePath, "w")
-    if not file then
-        return nil, "Could not open file: " .. filePath
+-- Function to merge two tables
+local function mergeTables(table1, table2)
+    for key, value in pairs(table2) do
+        table1[key] = value
     end
-    file:write(content)
-    file:close()
-    return true
+    return table1
 end
 
--- Helper function to split a string
-local function splitString(str, separator)
-    local result = {}
-    for match in (str .. separator):gmatch("(.-)" .. separator) do
-        table.insert(result, match)
+-- Function to find the maximum value in a table
+local function maxInTable(inputTable)
+    local maxVal = -math.huge
+    for _, value in ipairs(inputTable) do
+        if value > maxVal then
+            maxVal = value
+        end
     end
-    return result
+    return maxVal
 end
 
-return { readFile = readFile, writeFile = writeFile, splitString = splitString }
+-- Function to sort the keys of a table
+local function sortedKeys(inputTable)
+    local keys = {}
+    for key in pairs(inputTable) do
+        table.insert(keys, key)
+    end
+    table.sort(keys)
+    return keys
+end
+
+-- Exported functions
+return {
+    isNotNil = isNotNil,
+    mergeTables = mergeTables,
+    maxInTable = maxInTable,
+    sortedKeys = sortedKeys
+}
