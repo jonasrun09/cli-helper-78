@@ -1,44 +1,44 @@
---[[
-    Configuration settings for the application.
+local Config = {}
 
-    @module config
-]]--
+-- Load configurations from a file
+function Config.load(file)
+    local f, err = io.open(file, "r")
+    if not f then
+        error("Could not open file: " .. err)
+    end
+    local contents = f:read("*a")
+    f:close()
+    local config, loadErr = load(contents)
+    if not config then
+        error("Error loading config: " .. loadErr)
+    end
+    return config()
+end
 
-local config = {}
-
----@type string
-local appName = "cli-helper-78"
-
----@type string
-local appVersion = "1.0.0"
-
----@type boolean
-local debugMode = false
-
----@type table<string, any>
-config.settings = {
-    theme = "dark",
-    language = "en",
-    timeout = 30
-}
-
----@type function
----@param level string
----@param message string
----@return nil
-function config.log(level, message)
-    if debugMode then
-        print(string.format("[%s] %s: %s", level, appName, message))
+-- Validate the configuration
+function Config.validate(data)
+    if type(data) ~= "table" then
+        error("Configuration data must be a table")
+    end
+    if not data.setting1 then
+        error("Missing required setting: setting1")
+    end
+    if data.setting2 and type(data.setting2) ~= "number" then
+        error("Invalid type for setting2: expected number")
     end
 end
 
----@function
----@return table
-function config.getAppInfo()
-    return {
-        name = appName,
-        version = appVersion
-    }
+-- Save configurations to a file
+function Config.save(file, data)
+    local f, err = io.open(file, "w")
+    if not f then
+        error("Could not open file for writing: " .. err)
+    end
+    local success, saveErr = f:write(data)
+    if not success then
+        error("Error writing to file: " .. saveErr)
+    end
+    f:close()
 end
 
-return config
+return Config
