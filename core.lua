@@ -1,35 +1,30 @@
--- Retry logic for network operations in Lua
+-- Logger with rotation implementation
+local Logger = {}
 
-local function networkRequest(url)
-    -- Placeholder for actual network request logic (e.g. using socket library)
-    return math.random() < 0.7 -- Simulates a failure 30% of the time
+-- Initialize the logger
+function Logger:new(filename, max_size)
+    local obj = { filename = filename, max_size = max_size, current_size = 0 }
+    self.__index = self
+    return setmetatable(obj, self)
 end
 
-local function retryNetworkOperation(url, maxRetries, delay)
-    local tryCount = 0
-    local success, result
-
-    while tryCount < maxRetries do
-        tryCount = tryCount + 1
-        success, result = pcall(networkRequest, url)
-
-        if success and result then
-            return result
-        end
-        print(string.format("Attempt %d failed, retrying in %d seconds...", tryCount, delay))
-        os.execute(string.format("sleep %d", delay)) -- Simple sleep function, replace with appropriate delay logic
+-- Write log entry
+function Logger:log(message)
+    local size = string.len(message) + 1
+    self.current_size = self.current_size + size
+    if self.current_size > self.max_size then
+        self:rotate()
     end
-    error("All attempts failed after " .. tryCount .. " retries")
+    local file = io.open(self.filename, "a+")
+    file:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n")
+    file:close()
 end
 
--- Example usage
-local url = "http://example.com"
-local maxRetries = 5
-local delay = 2
-
-local function run()
-    local successResult = retryNetworkOperation(url, maxRetries, delay)
-    print("Operation succeeded with result: " .. tostring(successResult))
+-- Rotate the log file
+function Logger:rotate()
+    local old_filename = self.filename .. ".old"
+    os.rename(self.filename, old_filename)
+    self.current_size = 0
 end
 
-run()
+return Logger
