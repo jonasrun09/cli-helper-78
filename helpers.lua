@@ -1,41 +1,52 @@
--- Utility function to check if a value is not nil
-local function isNotNil(value)
-    return value ~= nil
+--[[
+    Helper functions for basic operations
+    @module helpers
+]]
+
+local helpers = {}
+
+---
+-- Adds two numbers together
+-- @number a First number
+-- @number b Second number
+-- @return number Sum of a and b
+---
+function helpers.add(a, b)
+    return a + b
 end
 
--- Function to merge two tables
-local function mergeTables(table1, table2)
-    for key, value in pairs(table2) do
-        table1[key] = value
+---
+-- Subtracts the second number from the first
+-- @number a First number
+-- @number b Second number
+-- @return number Result of a minus b
+---
+function helpers.subtract(a, b)
+    return a - b
+end
+
+---
+-- Multiplies two numbers together
+-- @number a First number
+-- @number b Second number
+-- @return number Product of a and b
+---
+function helpers.multiply(a, b)
+    return a * b
+end
+
+---
+-- Divides the first number by the second
+-- @number a Dividend
+-- @number b Divisor
+-- @return number Quotient of a and b
+-- @raises error if b is zero
+---
+function helpers.divide(a, b)
+    if b == 0 then
+        error("Division by zero")
     end
-    return table1
+    return a / b
 end
 
--- Function to find the maximum value in a table
-local function maxInTable(inputTable)
-    local maxVal = -math.huge
-    for _, value in ipairs(inputTable) do
-        if value > maxVal then
-            maxVal = value
-        end
-    end
-    return maxVal
-end
-
--- Function to sort the keys of a table
-local function sortedKeys(inputTable)
-    local keys = {}
-    for key in pairs(inputTable) do
-        table.insert(keys, key)
-    end
-    table.sort(keys)
-    return keys
-end
-
--- Exported functions
-return {
-    isNotNil = isNotNil,
-    mergeTables = mergeTables,
-    maxInTable = maxInTable,
-    sortedKeys = sortedKeys
-}
+return helpers
