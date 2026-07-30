@@ -1,30 +1,24 @@
--- Logger with rotation implementation
-local Logger = {}
+-- Utility function to handle various data types and format them as needed
 
--- Initialize the logger
-function Logger:new(filename, max_size)
-    local obj = { filename = filename, max_size = max_size, current_size = 0 }
-    self.__index = self
-    return setmetatable(obj, self)
-end
-
--- Write log entry
-function Logger:log(message)
-    local size = string.len(message) + 1
-    self.current_size = self.current_size + size
-    if self.current_size > self.max_size then
-        self:rotate()
+local function formatData(data)
+    local formatted = ''
+    if type(data) == 'table' then
+        for k, v in pairs(data) do
+            formatted = formatted .. k .. ': ' .. (type(v) == 'table' and formatData(v) or tostring(v)) .. '\n'
+        end
+    elseif type(data) == 'string' then
+        formatted = data
+    elseif type(data) == 'number' then
+        formatted = tostring(data)
+    else
+        formatted = 'Unsupported type'
     end
-    local file = io.open(self.filename, "a+")
-    file:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n")
-    file:close()
+    return formatted
 end
 
--- Rotate the log file
-function Logger:rotate()
-    local old_filename = self.filename .. ".old"
-    os.rename(self.filename, old_filename)
-    self.current_size = 0
+function printFormattedData(data)
+    local output = formatData(data)
+    print(output)
 end
 
-return Logger
+return { printFormattedData = printFormattedData }
