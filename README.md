@@ -1,52 +1,46 @@
-# CLI Helper 78
+# cli-helper-78
 
-CLI Helper 78 is a lightweight command-line interface utility designed to simplify and enhance your daily coding tasks. Built with Lua, this tool provides a range of functionalities that help streamline workflows and automate repetitive actions, making it an essential companion for developers.
+cli-helper-78 is a lightweight command-line interface (CLI) utility built in Lua designed to simplify the interaction with common system tasks. With an intuitive design and a focus on performance, this tool enhances the efficiency of scripting and automation workflows.
 
 ## Features
 
-- **Custom Command Management**: Easily create, manage, and execute custom commands tailored to your specific needs, reducing repetitive typing.
-- **Script Execution**: Quickly run Lua scripts and manage environments directly from the command line, enhancing your development speed.
-- **Auto-Completion**: Enjoy intelligent auto-completion for commands, options, and paths, increasing efficiency and reducing errors.
-- **Cross-Platform Compatibility**: Works seamlessly across various operating systems, including Windows, macOS, and Linux, ensuring a consistent user experience.
+- **Task Automation**: Seamlessly automate repetitive tasks, such as file management and system monitoring, with simple commands.
+- **Configurable Aliases**: Create custom shortcuts for frequently used commands, improving speed and reducing errors during execution.
+- **Interactive Mode**: Enter an interactive shell that allows users to issue commands in real-time with instant feedback.
+- **Cross-Platform Compatibility**: Operates on multiple operating systems, including Windows, macOS, and Linux, ensuring versatility in various environments.
 
 ## Installation
 
-To install CLI Helper 78, clone the repository and set it up in your Lua environment:
+To install cli-helper-78, clone the repository and run the installation script:
 
 ```bash
-git clone https://github.com/Developer/cli-helper-78.git
+git clone https://github.com/username/cli-helper-78.git
 cd cli-helper-78
-luarocks make
+lua install.lua
 ```
 
-Ensure you have Lua and Luarocks installed on your machine. For more information on setting up Lua, visit the official [Lua website](https://www.lua.org/start.html).
+Make sure you have Lua installed on your system; you can download it from [the official Lua website](https://www.lua.org/download.html).
 
 ## Basic Usage
 
-Once installed, you can start using the CLI Helper 78 by executing the following command:
+Once installed, you can start using cli-helper-78 by executing the command in your terminal:
 
 ```bash
-cli-helper
+cli-helper-78
 ```
 
-To create a custom command, simply run:
+This command will launch the interactive mode. For example, to create a file with a specific name, simply type:
 
 ```bash
-cli-helper create my-command "echo Hello, World!"
+create myfile.txt
 ```
 
-Now, you can execute your command with:
+You can explore more commands and their usage by typing `help` within the interactive shell.
 
-```bash
-my-command
-```
+![MIT License](https://img.shields.io/badge/license-MIT-brightgreen)
 
-This will output:
+## License
 
-```
-Hello, World!
-```
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-For more features and detailed documentation, please refer to the [Wiki](https://github.com/Developer/cli-helper-78/wiki).
-
-![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)
+For contributions, suggestions, or issues, please feel free to open a ticket on the issues page or submit a pull request!
