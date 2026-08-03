@@ -1,52 +1,51 @@
---[[
-    Helper functions for basic operations
-    @module helpers
-]]
+-- Helper functions for common operations
 
-local helpers = {}
+local M = {}
 
----
--- Adds two numbers together
--- @number a First number
--- @number b Second number
--- @return number Sum of a and b
----
-function helpers.add(a, b)
-    return a + b
-end
-
----
--- Subtracts the second number from the first
--- @number a First number
--- @number b Second number
--- @return number Result of a minus b
----
-function helpers.subtract(a, b)
-    return a - b
-end
-
----
--- Multiplies two numbers together
--- @number a First number
--- @number b Second number
--- @return number Product of a and b
----
-function helpers.multiply(a, b)
-    return a * b
-end
-
----
--- Divides the first number by the second
--- @number a Dividend
--- @number b Divisor
--- @return number Quotient of a and b
--- @raises error if b is zero
----
-function helpers.divide(a, b)
-    if b == 0 then
-        error("Division by zero")
+-- Function to check if a value is in a table
+function M.contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then return true end
     end
-    return a / b
+    return false
 end
 
-return helpers
+-- Function to merge two tables
+function M.merge(t1, t2)
+    local merged = {}
+    for k, v in pairs(t1) do
+        merged[k] = v
+    end
+    for k, v in pairs(t2) do
+        merged[k] = v
+    end
+    return merged
+end
+
+-- Function to create a deep copy of a table
+function M.deep_copy(original)
+    local copy
+    if type(original) == 'table' then
+        copy = {}
+        for k, v in pairs(original) do
+            copy[M.deep_copy(k)] = M.deep_copy(v)
+        end
+        setmetatable(copy, M.deep_copy(getmetatable(original)))
+    else -- number, string, boolean, etc
+        copy = original
+    end
+    return copy
+end
+
+-- Function to generate a random integer between a min and max value
+function M.random_int(min, max)
+    math.randomseed(os.time())
+    return math.random(min, max)
+end
+
+-- Function to format a string with placeholders
+function M.format_string(str, tab)
+    return (str:gsub('%%(%w+)', function(key) return tostring(tab[key]) or '' end))
+end
+
+return M
