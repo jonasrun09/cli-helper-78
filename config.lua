@@ -1,44 +1,33 @@
-local Config = {}
+-- Configuration loader with defaults
+local json = require('json')
 
--- Load configurations from a file
-function Config.load(file)
-    local f, err = io.open(file, "r")
-    if not f then
-        error("Could not open file: " .. err)
-    end
-    local contents = f:read("*a")
-    f:close()
-    local config, loadErr = load(contents)
-    if not config then
-        error("Error loading config: " .. loadErr)
-    end
-    return config()
-end
+local ConfigLoader = {}
+ConfigLoader.defaults = {}
 
--- Validate the configuration
-function Config.validate(data)
-    if type(data) ~= "table" then
-        error("Configuration data must be a table")
-    end
-    if not data.setting1 then
-        error("Missing required setting: setting1")
-    end
-    if data.setting2 and type(data.setting2) ~= "number" then
-        error("Invalid type for setting2: expected number")
+-- Set default values
+function ConfigLoader.setDefaults(defaults)
+    for key, value in pairs(defaults) do
+        ConfigLoader.defaults[key] = value
     end
 end
 
--- Save configurations to a file
-function Config.save(file, data)
-    local f, err = io.open(file, "w")
-    if not f then
-        error("Could not open file for writing: " .. err)
+-- Load configuration from specified file, merging with defaults
+function ConfigLoader.load(filePath)
+    local file, err = io.open(filePath, 'r')
+    if not file then
+        print('Error opening file: ' .. err)
+        return ConfigLoader.defaults
     end
-    local success, saveErr = f:write(data)
-    if not success then
-        error("Error writing to file: " .. saveErr)
+    local content = file:read('*a')
+    file:close()
+
+    local config, err = json.decode(content)
+    if err then
+        print('Error decoding JSON: ' .. err)
+        return ConfigLoader.defaults
     end
-    f:close()
+
+    return setmetatable(config, {__index = ConfigLoader.defaults})
 end
 
-return Config
+return ConfigLoader
