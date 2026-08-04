@@ -1,51 +1,36 @@
--- Helper functions for common operations
+--[[
+    This module provides utility functions for
+    string manipulation and data conversions.
+]]
 
-local M = {}
+local helpers = {}
 
--- Function to check if a value is in a table
-function M.contains(table, value)
-    for _, v in ipairs(table) do
-        if v == value then return true end
+--- Checks if a string is a valid email address.
+-- @param email string: The email address to verify.
+-- @return boolean: True if valid, false otherwise.
+function helpers.isValidEmail(email)
+    local pattern = '^%S+@%S+%.%S+$'
+    return email:match(pattern) ~= nil
+end
+
+--- Converts a string to a table of words.
+-- @param str string: The input string to convert.
+-- @return table: A table containing words from the string.
+function helpers.stringToTable(str)
+    local tbl = {}
+    for word in str:gmatch('%S+') do
+        table.insert(tbl, word)
     end
-    return false
+    return tbl
 end
 
--- Function to merge two tables
-function M.merge(t1, t2)
-    local merged = {}
-    for k, v in pairs(t1) do
-        merged[k] = v
-    end
-    for k, v in pairs(t2) do
-        merged[k] = v
-    end
-    return merged
+--- Capitalizes the first letter of each word in a string.
+-- @param str string: The input string to capitalize.
+-- @return string: The transformed string with capitalized words.
+function helpers.capitalizeWords(str)
+    return str:gsub('(%a)(%S*)', function(first, rest)
+        return first:upper() .. rest:lower()
+    end)
 end
 
--- Function to create a deep copy of a table
-function M.deep_copy(original)
-    local copy
-    if type(original) == 'table' then
-        copy = {}
-        for k, v in pairs(original) do
-            copy[M.deep_copy(k)] = M.deep_copy(v)
-        end
-        setmetatable(copy, M.deep_copy(getmetatable(original)))
-    else -- number, string, boolean, etc
-        copy = original
-    end
-    return copy
-end
-
--- Function to generate a random integer between a min and max value
-function M.random_int(min, max)
-    math.randomseed(os.time())
-    return math.random(min, max)
-end
-
--- Function to format a string with placeholders
-function M.format_string(str, tab)
-    return (str:gsub('%%(%w+)', function(key) return tostring(tab[key]) or '' end))
-end
-
-return M
+return helpers
