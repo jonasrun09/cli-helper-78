@@ -1,36 +1,33 @@
---[[
-    This module provides utility functions for
-    string manipulation and data conversions.
-]]
+-- Simple configuration loader with defaults
+local json = require('json')
 
-local helpers = {}
+local ConfigLoader = {}
 
---- Checks if a string is a valid email address.
--- @param email string: The email address to verify.
--- @return boolean: True if valid, false otherwise.
-function helpers.isValidEmail(email)
-    local pattern = '^%S+@%S+%.%S+$'
-    return email:match(pattern) ~= nil
-end
-
---- Converts a string to a table of words.
--- @param str string: The input string to convert.
--- @return table: A table containing words from the string.
-function helpers.stringToTable(str)
-    local tbl = {}
-    for word in str:gmatch('%S+') do
-        table.insert(tbl, word)
+function ConfigLoader.load(filepath, defaults)
+    local file = io.open(filepath, 'r')
+    if not file then
+        return defaults  -- Return defaults if file doesn't exist
     end
-    return tbl
+    local content = file:read('*a')
+    file:close()
+    local config
+    
+    -- Attempt to decode JSON file
+    local success, result = pcall(json.decode, content)
+    if success then
+        config = result
+    else
+        config = defaults  -- Fallback to defaults on error
+    end
+    
+    -- Merge defaults with loaded config
+    for key, value in pairs(defaults) do
+        if config[key] == nil then
+            config[key] = value
+        end
+    end
+    
+    return config
 end
 
---- Capitalizes the first letter of each word in a string.
--- @param str string: The input string to capitalize.
--- @return string: The transformed string with capitalized words.
-function helpers.capitalizeWords(str)
-    return str:gsub('(%a)(%S*)', function(first, rest)
-        return first:upper() .. rest:lower()
-    end)
-end
-
-return helpers
+return ConfigLoader
