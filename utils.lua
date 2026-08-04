@@ -1,41 +1,37 @@
-local lfs = require('lfs')
+local M = {}
 
-local Logger = {}
-Logger.__index = Logger
-
-function Logger:new(logDir, maxSize)
-    local instance = setmetatable({}, self)
-    instance.logDir = logDir or './logs'
-    instance.maxSize = maxSize or 1048576 -- 1MB
-    instance:setup()
-    return instance
-end
-
-function Logger:setup()
-    if not lfs.attributes(self.logDir) then
-        lfs.mkdir(self.logDir)
+function M.split(str, delimiter)
+    if not delimiter or string.len(delimiter) == 0 then
+        return { str }
     end
-    self.logFilePath = self.logDir .. '/log.txt'
-    self:checkRotation()
-end
-
-function Logger:checkRotation()
-    local file = io.open(self.logFilePath, 'a+')
-    if file then
-        file:seek('end')
-        local size = file:seek('cur')
-        file:close()
-        if size >= self.maxSize then
-            os.rename(self.logFilePath, self.logDir .. '/log_' .. os.date('%Y%m%d%H%M%S') .. '.txt')
-        end
+    local result = {}
+    for match in (str..delimiter):gmatch("([^"]*),") do
+        table.insert(result, match)
     end
+    return result
 end
 
-function Logger:log(message)
-    self:checkRotation()
-    local file = io.open(self.logFilePath, 'a')
-    file:write(os.date('%Y-%m-%d %H:%M:%S') .. ' - ' .. message .. '\n')
-    file:close()
+function M.trim(s)
+    return s:match("^%s*(.-)%s*$")
 end
 
-return Logger
+function M.shuffle(t)
+    math.randomseed(os.time())
+    for i = #t, 2, -1 do
+        local j = math.random(i)
+        t[i], t[j] = t[j], t[i]
+    end
+    return t
+end
+
+function M.is_empty(table)
+    return next(table) == nil
+end
+
+function M.table_length(t)
+    local count = 0
+    for _ in pairs(t) do count = count + 1 end
+    return count
+end
+
+return M
