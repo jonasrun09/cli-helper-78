@@ -1,37 +1,55 @@
-local M = {}
+-- General utility functions for data handling
 
-function M.split(str, delimiter)
-    if not delimiter or string.len(delimiter) == 0 then
-        return { str }
-    end
+-- Function to flatten a nested table into a single-level table
+local function flatten(t)
     local result = {}
-    for match in (str..delimiter):gmatch("([^"]*),") do
-        table.insert(result, match)
+    local function recurse(t)
+        for _, v in ipairs(t) do
+            if type(v) == 'table' then
+                recurse(v)
+            else
+                table.insert(result, v)
+            end
+        end
+    end
+    recurse(t)
+    return result
+end
+
+-- Function to merge two tables
+local function merge(t1, t2)
+    local result = {}
+    for k, v in pairs(t1) do
+        result[k] = v
+    end
+    for k, v in pairs(t2) do
+        if result[k] and type(result[k]) == 'table' and type(v) == 'table' then
+            result[k] = merge(result[k], v) -- deep merge
+        else
+            result[k] = v
+        end
     end
     return result
 end
 
-function M.trim(s)
-    return s:match("^%s*(.-)%s*$")
-end
-
-function M.shuffle(t)
-    math.randomseed(os.time())
-    for i = #t, 2, -1 do
-        local j = math.random(i)
-        t[i], t[j] = t[j], t[i]
+-- Function to deeply clone a table
+local function deepClone(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepClone(orig_key)] = deepClone(orig_value)
+        end
+        setmetatable(copy, deepClone(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
     end
-    return t
+    return copy
 end
 
-function M.is_empty(table)
-    return next(table) == nil
-end
-
-function M.table_length(t)
-    local count = 0
-    for _ in pairs(t) do count = count + 1 end
-    return count
-end
-
-return M
+return {
+    flatten = flatten,
+    merge = merge,
+    deepClone = deepClone
+}
