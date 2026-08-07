@@ -1,55 +1,47 @@
--- General utility functions for data handling
+-- A Lua utility to handle various data operations
 
--- Function to flatten a nested table into a single-level table
-local function flatten(t)
-    local result = {}
-    local function recurse(t)
-        for _, v in ipairs(t) do
-            if type(v) == 'table' then
-                recurse(v)
-            else
-                table.insert(result, v)
-            end
-        end
-    end
-    recurse(t)
-    return result
-end
+local M = {}
 
--- Function to merge two tables
-local function merge(t1, t2)
-    local result = {}
-    for k, v in pairs(t1) do
-        result[k] = v
+function M.deepCopy(original)
+    if type(original) ~= 'table' then
+        return original
     end
-    for k, v in pairs(t2) do
-        if result[k] and type(result[k]) == 'table' and type(v) == 'table' then
-            result[k] = merge(result[k], v) -- deep merge
-        else
-            result[k] = v
-        end
-    end
-    return result
-end
-
--- Function to deeply clone a table
-local function deepClone(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[deepClone(orig_key)] = deepClone(orig_value)
-        end
-        setmetatable(copy, deepClone(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
+    local copy = {}
+    for key, value in next, original, nil do
+        copy[M.deepCopy(key)] = M.deepCopy(value)
     end
     return copy
 end
 
-return {
-    flatten = flatten,
-    merge = merge,
-    deepClone = deepClone
-}
+function M.mergeTables(t1, t2)
+    local merged = M.deepCopy(t1)
+    for key, value in pairs(t2) do
+        if type(value) == 'table' and type(merged[key] or false) == 'table' then
+            merged[key] = M.mergeTables(merged[key], value)
+        else
+            merged[key] = value
+        end
+    end
+    return merged
+end
+
+function M.getValue(table, key, default)
+    return table[key] ~= nil and table[key] or default
+end
+
+function M.flattenTable(t)
+    local result = {}
+    local function recursiveFlatten(subTable)
+        for _, value in ipairs(subTable) do
+            if type(value) == 'table' then
+                recursiveFlatten(value)
+            else
+                table.insert(result, value)
+            end
+        end
+    end
+    recursiveFlatten(t)
+    return result
+end
+
+return M
