@@ -1,29 +1,35 @@
--- Lua configuration loader with defaults
-
-local Config = {}
-
--- Default configuration values
-Config.defaults = {
-    settingA = true,
-    settingB = 42,
-    settingC = "default value",
+-- Configuration settings for the CLI helper
+local config = {
+    version = "1.0.0",
+    author = "Lua Developer",
+    settings = {
+        debug = false,
+        maxAttempts = 5,
+        timeout = 30,
+    },
+    endpoints = {
+        apiUrl = "https://api.example.com/v1/",
+        anotherService = "https://another.service/api/"
+    }
 }
 
--- Function to load configuration from a file or use defaults
-function Config.load(filename)
-    local config = Config.defaults
-    local file = io.open(filename, "r")
-
-    if file then
-        local content = file:read("*a")
-        file:close()
-        local loadedConfig = load("return " .. content)()
-
-        if type(loadedConfig) == "table" then
-            config = setmetatable(loadedConfig, {__index = Config.defaults})
-        end
-    end
-    return config
+-- Function to get a configuration value
+local function getConfigValue(key)
+    return config[key] or nil
 end
 
-return Config
+-- Function to set a configuration value
+local function setConfigValue(key, value)
+    if config[key] ~= nil then
+        config[key] = value
+    else
+        error("Invalid configuration key: " .. key)
+    end
+end
+
+return {
+    get = getConfigValue,
+    set = setConfigValue,
+    author = config.author,
+    version = config.version
+}
