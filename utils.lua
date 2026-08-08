@@ -1,47 +1,33 @@
--- A Lua utility to handle various data operations
+-- Simple network request function with retry logic
 
-local M = {}
+local http = require('socket.http')
 
-function M.deepCopy(original)
-    if type(original) ~= 'table' then
-        return original
-    end
-    local copy = {}
-    for key, value in next, original, nil do
-        copy[M.deepCopy(key)] = M.deepCopy(value)
-    end
-    return copy
-end
+local function retry_request(url, retries, delay)
+    local attempts = 0
+    local response, code
 
-function M.mergeTables(t1, t2)
-    local merged = M.deepCopy(t1)
-    for key, value in pairs(t2) do
-        if type(value) == 'table' and type(merged[key] or false) == 'table' then
-            merged[key] = M.mergeTables(merged[key], value)
-        else
-            merged[key] = value
+    while attempts < retries do
+        response, code = http.request(url)
+        if code == 200 then
+            return response
         end
+        attempts = attempts + 1
+        print('Attempt ' .. attempts .. ' failed. Retrying in ' .. delay .. ' seconds...')
+        os.execute('sleep ' .. delay)
     end
-    return merged
+    return nil, 'Failed after ' .. retries .. ' attempts'
 end
 
-function M.getValue(table, key, default)
-    return table[key] ~= nil and table[key] or default
-end
-
-function M.flattenTable(t)
-    local result = {}
-    local function recursiveFlatten(subTable)
-        for _, value in ipairs(subTable) do
-            if type(value) == 'table' then
-                recursiveFlatten(value)
-            else
-                table.insert(result, value)
-            end
-        end
+function fetch_data(url)
+    local max_retries = 5
+    local delay_between_retries = 2
+    local data, err = retry_request(url, max_retries, delay_between_retries)
+    if not data then
+        print('Error fetching data: ' .. err)
     end
-    recursiveFlatten(t)
-    return result
+    return data
 end
 
-return M
+return {
+    fetch_data = fetch_data,
+}
